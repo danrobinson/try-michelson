@@ -9,7 +9,6 @@ export const typecheck = () => {
       method: 'post',
       body: JSON.stringify({ program: source })
     }).then((result) => {
-      console.log(result)
       return result.text()
     }).then((result) => {
       dispatch({
