@@ -3,9 +3,9 @@ import { Grid, Navbar, Panel, Row, Col, Button } from 'react-bootstrap';
 import AceEditor from 'react-ace';
 import { connect } from 'react-redux';
 import { getSource, getResult, edit, typecheck } from './editing';
-
-import 'brace/mode/text';
 import 'brace/theme/tomorrow_night_bright';
+
+require("./mode-michelson.js")
 
 const HeaderUnconnected = ({ typecheck, source }) => {
   return <div className="panel-heading clearfix">
@@ -47,7 +47,7 @@ const RenderPage = ({ source, edit, result }) =>
           <Col xs={12} md={7} className="col-md-pull-5">
           <Panel header="Source">
               <AceEditor
-              mode="text"
+              mode="michelson"
               theme="tomorrow_night_bright"
               name="codeEditor"
               width="100%"
