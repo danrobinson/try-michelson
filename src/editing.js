@@ -9,7 +9,7 @@ export const typecheck = () => {
   return (dispatch, getState) => {
     const state = getState()
     const source = getSource(state)
-    fetch('http://try-michelson.com/typecheck', {
+    fetch('https://try-michelson.com/typecheck', {
       method: 'post',
       body: JSON.stringify({ program: source })
     }).then((result) => {
@@ -57,7 +57,7 @@ export default function reducer(state = initialState, action) {
     case SHARE: {
       return {
         ...state,
-        result: "http://try-michelson.com/?" + stringify({ source: state.source }),
+        result: "https://try-michelson.com/?" + stringify({ source: state.source }),
         select: true
       }
     }
