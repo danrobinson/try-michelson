@@ -33,7 +33,8 @@ code {CDR; DUP;
 
 const initialState = {
   source: firstExample,
-  result: ""
+  result: "",
+  select: false
 }
 
 export default function reducer(state = initialState, action) {
@@ -42,26 +43,31 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         source: action.source,
-        result: ""
+        result: "",
+        select: false
       }
     }
     case SET_RESULT: {
       return {
         ...state,
-        result: action.result
+        result: action.result,
+        select: false
       }
     }
     case SHARE: {
       return {
         ...state,
-        result: "http://try-michelson.com/?" + stringify({ source: state.source })
+        result: "http://try-michelson.com/?" + stringify({ source: state.source }),
+        select: true
       }
     }
     case "@@router/LOCATION_CHANGE":
       const parameters = parse(action.payload.search)
       return {
         ...state,
-        source: parameters.source || state.source
+        source: parameters.source || state.source,
+        result: "",
+        select: false
       }
     default: return state
   }
@@ -78,6 +84,11 @@ export const getSource = createSelector(
 export const getResult = createSelector(
   getEditing,
   state => state.result  
+)
+
+export const getSelect = createSelector(
+  getEditing,
+  state => state.select  
 )
 
 export const edit = (source) => ({

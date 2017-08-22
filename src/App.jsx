@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Navbar, Panel, Row, Col, Button, ButtonToolbar } from 'react-bootstrap';
 import AceEditor from 'react-ace';
 import { connect } from 'react-redux';
-import { getSource, getResult, edit, typecheck, share } from './editing';
+import { getSource, getResult, getSelect, edit, typecheck, share } from './editing';
 import 'brace/theme/tomorrow_night_bright';
 
 require("./mode-michelson.js")
@@ -21,7 +21,23 @@ const Header = connect(
   { typecheck, share }
 )(HeaderUnconnected)
 
-const RenderPage = ({ source, edit, result }) => {
+function selectElement(el) {
+  let range = document.createRange();
+  range.selectNodeContents(el);
+  let sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function deselect() {
+  if ( document.selection ) {
+    document.selection.empty();
+  } else if ( window.getSelection ) {
+    window.getSelection().removeAllRanges();
+  }
+}
+
+const RenderPage = ({ source, edit, result, select }) => {
       return <div>
         <Navbar inverse staticTop>
           <Grid>
@@ -66,7 +82,7 @@ const RenderPage = ({ source, edit, result }) => {
         <Row>
         <Col xs={12}>
         <Panel header={<Header />}>
-            { result && <pre>{ result }</pre> }
+            { result && <pre ref={box => box && (select ? selectElement(box) : deselect())}>{ result }</pre> }
           </Panel>
           </Col>
         </Row>
@@ -80,7 +96,9 @@ const RenderPage = ({ source, edit, result }) => {
 
 const App = connect(
   (state => ({ source: getSource(state), 
-               result: getResult(state) })),
+               result: getResult(state),
+               select: getSelect(state)
+               })),
   { edit }
 )(RenderPage)
 
