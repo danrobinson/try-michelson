@@ -4,13 +4,16 @@ import './index.css';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import { Provider } from 'react-redux';
-import { typecheck } from './editing';
+import { ConnectedRouter } from 'react-router-redux'
+import { Route } from 'react-router'
 
-import store from './store'
+import { store, history } from './store'
 
 import './static/css/bootstrap-darkly.min.css';
 
-store.dispatch(typecheck())
-
-ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'), (() => undefined));
+ReactDOM.render(<Provider store={store}>
+    <ConnectedRouter history={history}>
+      <Route path="/" exact={true} component={App} />
+    </ConnectedRouter>
+  </Provider>, document.getElementById('root'), (() => undefined));
 registerServiceWorker();

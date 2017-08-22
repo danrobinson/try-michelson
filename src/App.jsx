@@ -1,25 +1,28 @@
 import React from 'react';
-import { Grid, Navbar, Panel, Row, Col, Button } from 'react-bootstrap';
+import { Grid, Navbar, Panel, Row, Col, Button, ButtonToolbar } from 'react-bootstrap';
 import AceEditor from 'react-ace';
 import { connect } from 'react-redux';
-import { getSource, getResult, edit, typecheck } from './editing';
+import { getSource, getResult, edit, typecheck, share } from './editing';
 import 'brace/theme/tomorrow_night_bright';
 
 require("./mode-michelson.js")
 
-const HeaderUnconnected = ({ typecheck, source }) => {
+const HeaderUnconnected = ({ typecheck, share, source }) => {
   return <div className="panel-heading clearfix">
-    <Button bsStyle="primary" bsSize="large" onClick={typecheck} disabled={source === ""}>Typecheck</Button>
-  </div>
+    <ButtonToolbar>
+      <Button bsStyle="primary" onClick={typecheck} disabled={source === ""}>Typecheck</Button>
+      <Button bsStyle="info" onClick={share} disabled={source === ""}>Share</Button>
+    </ButtonToolbar>
+    </div>
 }
 
 const Header = connect(
   state => ({ source: getSource(state) }),
-  { typecheck }
+  { typecheck, share }
 )(HeaderUnconnected)
 
-const RenderPage = ({ source, edit, result }) =>
-      <div>
+const RenderPage = ({ source, edit, result }) => {
+      return <div>
         <Navbar inverse staticTop>
           <Grid>
             <Navbar.Header>
@@ -73,10 +76,11 @@ const RenderPage = ({ source, edit, result }) =>
             created by <a href="https://twitter.com/danrobinson">@danrobinson</a>
           </div></footer>
 
-      </div>
+      </div>}
 
 const App = connect(
-  (state => ({ source: getSource(state), result: getResult(state) })),
+  (state => ({ source: getSource(state), 
+               result: getResult(state) })),
   { edit }
 )(RenderPage)
 

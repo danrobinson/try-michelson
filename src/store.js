@@ -1,25 +1,23 @@
-import { createStore, applyMiddleware, compose } from 'redux'
+import { createStore, applyMiddleware, compose, combineReducers } from 'redux'
 import thunk from 'redux-thunk'
 import reducer from './editing'
+import createHistory from 'history/createBrowserHistory'
+import { routerReducer, routerMiddleware } from 'react-router-redux'
+import { typecheck } from './editing'
 
+export const history = createHistory()
+
+const initialTypecheck = store => next => action => {
+  next(action)
+  if (action.type === "@@router/LOCATION_CHANGE") {
+    next(typecheck())
+  }
+}
 
 const enhancers = []
 const middleware = [
-  thunk
+  initialTypecheck, thunk, routerMiddleware(history)
 ]
-
-const firstExample = `parameter unit;
-return unit;
-storage tez;                    
-code {CDR; DUP;                 
-      AMOUNT; CMPLT;            
-      IF {FAIL} {UNIT; PAIR}}   
-`
-
-const initialState = {
-  source: firstExample,
-  result: ""
-}
 
 const devToolsExtension = window.devToolsExtension
 
@@ -32,10 +30,10 @@ const composedEnhancers = compose(
   ...enhancers
 )
 
-const store = createStore(
-  reducer,
-  initialState,
+export const store = createStore(
+  combineReducers({
+    editing: reducer,
+    router: routerReducer
+  }),
   composedEnhancers
 )
-
-export default store
