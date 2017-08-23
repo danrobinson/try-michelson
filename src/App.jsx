@@ -15,7 +15,7 @@ const Share = ({ shareURL }) => {
 }
 
 const RunUnconnected = ({ run, runResult, setInputField, parameter, storage }) => {
-  return <Form horizontal>
+  return <Form horizontal onSubmit={(e) => {e.preventDefault(); e.stopPropagation(); run();}}>
     <FormGroup controlId="storage">
       <Col componentClass={ControlLabel} value={storage} sm={2}>
         Storage
@@ -38,9 +38,9 @@ const RunUnconnected = ({ run, runResult, setInputField, parameter, storage }) =
     </FormGroup>
     <FormGroup>
       <Col smOffset={2} sm={10}>
-        {runResult ? <div><pre>{runResult}</pre><Button onClick={run}>
+        {runResult ? <div><pre>{runResult}</pre><Button type="submit">
           Run
-        </Button></div> : <Button onClick={run}>
+        </Button></div> : <Button type="submit">
           Run
         </Button>}
       </Col>
