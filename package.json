@@ -63,7 +63,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom"
+    "test": "node scripts/test.js --env=jsdom",
+    "deploy": "aws s3 cp build s3://try-michelson.com --recursive"
   },
   "jest": {
     "collectCoverageFrom": [

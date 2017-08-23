@@ -9,7 +9,7 @@ export const typecheck = () => {
   return (dispatch, getState) => {
     const state = getState()
     const source = getSource(state)
-    fetch('https://try-michelson.com/typecheck', {
+    fetch('https://api.try-michelson.com/typecheck', {
       method: 'post',
       body: JSON.stringify({ program: source })
     }).then((result) => {
