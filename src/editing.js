@@ -1,9 +1,11 @@
 import { createSelector } from 'reselect'
 import { parse, stringify } from 'query-string'
 
-const EDIT   = 'try-michelson/editing/EDIT';
-const TYPECHECK = 'try-michelson/editing/TYPECHECK';
-const SHARE = 'try-michelson/editing/SHARE';
+const EDIT   = 'try-michelson/editing/EDIT'
+const TYPECHECK = 'try-michelson/editing/TYPECHECK'
+const SHARE = 'try-michelson/editing/SHARE'
+const RUN = 'try-michelson/editing/RUN'
+const SET_INPUT_FIELD = 'try-michelson/editing/SET_INPUT_FIELD'
 
 export const typecheck = () => {
   return (dispatch, getState) => {
@@ -23,20 +25,24 @@ export const typecheck = () => {
   }
 }
 
-const firstExample = `parameter unit;
-return unit;
-storage tez;
-code {CDR; DUP;
-      AMOUNT; CMPLT;
-      IF {FAIL} {UNIT; PAIR}}
+const firstExample = `parameter string;
+storage string;
+return string;
+code {DUP;
+      CAR;
+      DIP{CDR;
+          DUP};
+      SWAP;
+      CONCAT;
+      PAIR}
 `
 
 const initialState = {
   source: firstExample,
-  result: {
-    loading: false,
-    result: ""
-  }
+  result: "",
+  typecheckResult: "",
+  parameter: "",
+  storage: ""
 }
 
 export default function reducer(state = initialState, action) {
@@ -44,13 +50,20 @@ export default function reducer(state = initialState, action) {
     case EDIT: {
       return {
         ...state,
-        source: action.source
+        source: action.source,
+        runResult: ""
       }
     }
     case TYPECHECK: {
       return {
         ...state,
-        result: action.result
+        typecheckResult: action.result
+      }
+    }
+    case RUN: {
+      return {
+        ...state,
+        runResult: action.result
       }
     }
     case SHARE: {
@@ -58,12 +71,20 @@ export default function reducer(state = initialState, action) {
         ...state
       }
     }
+    case SET_INPUT_FIELD: {
+      return {
+        ...state,
+        [action.field]: action.val,
+        runResult: ""
+      }
+    }
     case "@@router/LOCATION_CHANGE":
       const parameters = parse(action.payload.search)
       return {
         ...state,
         source: parameters.source || state.source,
-        result: ""
+        runResult: "",
+        typecheckResult: ""
       }
     default: return state
   }
@@ -77,10 +98,33 @@ export const getSource = createSelector(
   state => state.source  
 )
 
-export const getResult = createSelector(
+export const getTypecheckResult = createSelector(
   getEditing,
-  state => state.result  
+  state => state.typecheckResult  
 )
+
+export const getRunResult = createSelector(
+  getEditing,
+  state => state.runResult  
+)
+
+export const getParameter = createSelector(
+  getEditing,
+  state => state.parameter
+)
+
+export const getStorage = createSelector(
+  getEditing,
+  state => state.storage
+)
+
+export const setInputField = (field, val) => {
+  return {
+    type: SET_INPUT_FIELD,
+    field: field,
+    val: val
+  }
+}
 
 export const edit = (source) => {
   return (dispatch) => {
@@ -95,6 +139,26 @@ export const edit = (source) => {
 export const share = () => ({
   type: SHARE
 })
+
+export const run = () => {
+  return (dispatch, getState) => {
+    const state = getState()
+    const source = getSource(state)
+    const storage = getStorage(state)
+    const parameter = getParameter(state)
+    fetch('http://165.227.108.89/run', {
+      method: 'post',
+      body: JSON.stringify({ program: source, storage: storage, parameter: parameter })
+    }).then((result) => {
+      return result.text()
+    }).then((result) => {
+      dispatch({
+        type: RUN,
+        result: result
+      })
+    })
+  }
+}
 
 export const getShareURL = createSelector(
   getSource,

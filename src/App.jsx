@@ -1,8 +1,11 @@
 import React from 'react';
-import { Grid, Navbar, Panel, Row, Col, Tab, FormControl, NavItem, Nav } from 'react-bootstrap';
+import { Grid, Navbar, Panel, Row, Col, Tab, 
+         FormControl, NavItem, Nav, Form, 
+         FormGroup, ControlLabel, Button } from 'react-bootstrap';
 import AceEditor from 'react-ace';
 import { connect } from 'react-redux';
-import { getSource, getResult, edit, getShareURL } from './editing';
+import { getSource, getTypecheckResult, getRunResult, edit, 
+        getShareURL, getParameter, getStorage, run, setInputField } from './editing';
 import 'brace/theme/tomorrow_night_bright';
 
 require("./mode-michelson.js")
@@ -13,19 +16,62 @@ const Share = ({ shareURL }) => {
                inputRef={control => control && control.select()}></FormControl>
 }
 
+const RunUnconnected = ({ run, runResult, setInputField, parameter, storage }) => {
+  return <Form horizontal>
+    <FormGroup controlId="storage">
+      <Col componentClass={ControlLabel} value={storage} sm={2}>
+        Storage
+      </Col>
+      <Col sm={10}>
+        <FormControl type="text" value={storage} 
+                                 placeholder='E.g., Unit, 15, (Pair "foo" "bar")'
+                                 onChange={(val) => setInputField("storage", val.target.value)} />
+      </Col>
+    </FormGroup>
+    <FormGroup controlId="parameter">
+      <Col componentClass={ControlLabel} sm={2}>
+        Parameter
+      </Col>
+      <Col sm={10}>
+        <FormControl type="text" value={parameter} 
+                                 placeholder='E.g., Unit, 15, (Pair "foo" "bar")'
+                                 onChange={(val) => setInputField("parameter", val.target.value)} />
+      </Col>
+    </FormGroup>
+    <FormGroup>
+      <Col smOffset={2} sm={10}>
+        {runResult ? <div><pre>{runResult}</pre><Button onClick={run}>
+          Run
+        </Button></div> : <Button onClick={run}>
+          Run
+        </Button>}
+      </Col>
+    </FormGroup>
+</Form>
+}
+
+const Run = connect(
+  (state) => ({ runResult: getRunResult(state),
+                parameter: getParameter(state),
+                storage: getStorage(state) }),
+  { run, setInputField }
+)(RunUnconnected)
+
 const TabsUnconnected = ({ selectTab, selectedTab, source, shareURL, result }) => {
   return <Panel>
         <Tab.Container id="result" defaultActiveKey={1}>
         <div><div className="panel-heading clearfix">
           <Nav bsStyle="tabs">
           <NavItem eventKey={1}>Typecheck</NavItem>
-        <NavItem eventKey={2}>Share</NavItem>
-        </Nav></div>
+          <NavItem eventKey={2}>Run</NavItem>
+          <NavItem eventKey={3}>Share</NavItem>
+          </Nav></div>
         <Tab.Content animation={false}>
         <Tab.Pane eventKey={1} title="Typecheck">
           <div style={{paddingLeft: 30}}><pre>{result}</pre></div>
         </Tab.Pane>
-        <Tab.Pane eventKey={2} title="Share"><Share shareURL={shareURL} /></Tab.Pane>
+        <Tab.Pane eventKey={2} title="Run"><Run /></Tab.Pane>
+        <Tab.Pane eventKey={3} title="Share"><Share shareURL={shareURL} /></Tab.Pane>
         </Tab.Content>
         </div>
         </Tab.Container>
@@ -40,7 +86,7 @@ const TabsUnconnected = ({ selectTab, selectedTab, source, shareURL, result }) =
 
 const Results = connect(
   state => ({ source: getSource(state), 
-              result: getResult(state),
+              result: getTypecheckResult(state),
               shareURL: getShareURL(state)  }),
   null
 )(TabsUnconnected)
@@ -102,7 +148,7 @@ const RenderPage = ({ source, edit, result, select }) => {
 
 const App = connect(
   (state => ({ source: getSource(state), 
-               result: getResult(state)
+               result: getTypecheckResult(state)
                })),
   { edit }
 )(RenderPage)
