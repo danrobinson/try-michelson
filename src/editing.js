@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 import { parse, stringify } from 'query-string'
 
 const EDIT   = 'try-michelson/editing/EDIT';
-const SET_RESULT = 'try-michelson/editing/SET_RESULT';
+const TYPECHECK = 'try-michelson/editing/TYPECHECK';
 const SHARE = 'try-michelson/editing/SHARE';
 
 export const typecheck = () => {
@@ -16,7 +16,7 @@ export const typecheck = () => {
       return result.text()
     }).then((result) => {
       dispatch({
-        type: SET_RESULT,
+        type: TYPECHECK,
         result: result
       })
     })
@@ -33,8 +33,10 @@ code {CDR; DUP;
 
 const initialState = {
   source: firstExample,
-  result: "",
-  select: false
+  result: {
+    loading: false,
+    result: ""
+  }
 }
 
 export default function reducer(state = initialState, action) {
@@ -42,23 +44,18 @@ export default function reducer(state = initialState, action) {
     case EDIT: {
       return {
         ...state,
-        source: action.source,
-        result: "",
-        select: false
+        source: action.source
       }
     }
-    case SET_RESULT: {
+    case TYPECHECK: {
       return {
         ...state,
-        result: action.result,
-        select: false
+        result: action.result
       }
     }
     case SHARE: {
       return {
-        ...state,
-        result: "https://try-michelson.com/?" + stringify({ source: state.source }),
-        select: true
+        ...state
       }
     }
     case "@@router/LOCATION_CHANGE":
@@ -66,8 +63,7 @@ export default function reducer(state = initialState, action) {
       return {
         ...state,
         source: parameters.source || state.source,
-        result: "",
-        select: false
+        result: ""
       }
     default: return state
   }
@@ -86,16 +82,26 @@ export const getResult = createSelector(
   state => state.result  
 )
 
-export const getSelect = createSelector(
-  getEditing,
-  state => state.select  
-)
-
-export const edit = (source) => ({
-  type: EDIT,
-  source
-})
+export const edit = (source) => {
+  return (dispatch) => {
+    dispatch({
+      type: EDIT,
+      source
+    })
+    dispatch(typecheck())
+  }
+}
 
 export const share = () => ({
   type: SHARE
 })
+
+export const getShareURL = createSelector(
+  getSource,
+  source => "https://try-michelson.com/?" + stringify({ source })
+)
+
+export const getSelectedTab = createSelector(
+  getEditing,
+  state => state.selectedTab
+)

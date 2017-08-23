@@ -1,41 +1,49 @@
 import React from 'react';
-import { Grid, Navbar, Panel, Row, Col, Button, ButtonToolbar } from 'react-bootstrap';
+import { Grid, Navbar, Panel, Row, Col, Tab, FormControl, NavItem, Nav } from 'react-bootstrap';
 import AceEditor from 'react-ace';
 import { connect } from 'react-redux';
-import { getSource, getResult, getSelect, edit, typecheck, share } from './editing';
+import { getSource, getResult, edit, getShareURL } from './editing';
 import 'brace/theme/tomorrow_night_bright';
 
 require("./mode-michelson.js")
 
-const HeaderUnconnected = ({ typecheck, share, source }) => {
-  return <div className="panel-heading clearfix">
+const Share = ({ shareURL }) => {
+  return <FormControl componentClass="textarea" 
+               value={shareURL} readOnly={true} rows={5}
+               inputRef={control => control && control.select()}></FormControl>
+}
+
+const TabsUnconnected = ({ selectTab, selectedTab, source, shareURL, result }) => {
+  return <Panel>
+        <Tab.Container id="result" defaultActiveKey={1}>
+        <div><div className="panel-heading clearfix">
+          <Nav bsStyle="tabs">
+          <NavItem eventKey={1}>Typecheck</NavItem>
+        <NavItem eventKey={2}>Share</NavItem>
+        </Nav></div>
+        <Tab.Content animation={false}>
+        <Tab.Pane eventKey={1} title="Typecheck">
+          <div style={{paddingLeft: 30}}><pre>{result}</pre></div>
+        </Tab.Pane>
+        <Tab.Pane eventKey={2} title="Share"><Share shareURL={shareURL} /></Tab.Pane>
+        </Tab.Content>
+        </div>
+        </Tab.Container>
+      <br /></Panel>
+  /*return 
     <ButtonToolbar>
       <Button bsStyle="primary" onClick={typecheck} disabled={source === ""}>Typecheck</Button>
       <Button bsStyle="info" onClick={share} disabled={source === ""}>Share</Button>
     </ButtonToolbar>
-    </div>
+    </div>*/
 }
 
-const Header = connect(
-  state => ({ source: getSource(state) }),
-  { typecheck, share }
-)(HeaderUnconnected)
-
-function selectElement(el) {
-  let range = document.createRange();
-  range.selectNodeContents(el);
-  let sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
-
-function deselect() {
-  if ( document.selection ) {
-    document.selection.empty();
-  } else if ( window.getSelection ) {
-    window.getSelection().removeAllRanges();
-  }
-}
+const Results = connect(
+  state => ({ source: getSource(state), 
+              result: getResult(state),
+              shareURL: getShareURL(state)  }),
+  null
+)(TabsUnconnected)
 
 const RenderPage = ({ source, edit, result, select }) => {
       return <div>
@@ -81,9 +89,7 @@ const RenderPage = ({ source, edit, result, select }) => {
         </Row>
         <Row>
         <Col xs={12}>
-        <Panel header={<Header />}>
-            { result && <pre ref={box => box && (select ? selectElement(box) : deselect())}>{ result }</pre> }
-          </Panel>
+        <Results />
           </Col>
         </Row>
         </Grid>
@@ -96,8 +102,7 @@ const RenderPage = ({ source, edit, result, select }) => {
 
 const App = connect(
   (state => ({ source: getSource(state), 
-               result: getResult(state),
-               select: getSelect(state)
+               result: getResult(state)
                })),
   { edit }
 )(RenderPage)
