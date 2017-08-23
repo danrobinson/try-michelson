@@ -11,9 +11,7 @@ import 'brace/theme/tomorrow_night_bright';
 require("./mode-michelson.js")
 
 const Share = ({ shareURL }) => {
-  return <FormControl componentClass="textarea" 
-               value={shareURL} readOnly={true} rows={5}
-               inputRef={control => control && control.select()}></FormControl>
+  return <div style={{paddingLeft: 30, paddingTop: 10}}><a href={shareURL}>Sharing Link</a></div>
 }
 
 const RunUnconnected = ({ run, runResult, setInputField, parameter, storage }) => {

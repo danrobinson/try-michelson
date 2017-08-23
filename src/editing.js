@@ -146,7 +146,7 @@ export const run = () => {
     const source = getSource(state)
     const storage = getStorage(state)
     const parameter = getParameter(state)
-    fetch('http://165.227.108.89/run', {
+    fetch('https://api.try-michelson.com/run', {
       method: 'post',
       body: JSON.stringify({ program: source, storage: storage, parameter: parameter })
     }).then((result) => {
