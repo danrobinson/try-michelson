@@ -5,7 +5,7 @@ import { Grid, Navbar, Panel, Row, Col, Tab,
 import AceEditor from 'react-ace';
 import { connect } from 'react-redux';
 import { getSource, getTypecheckResult, getRunResult, edit, 
-        getShareURL, getParameter, getStorage, run, setInputField } from './editing';
+        getShareURL, getParameter, getStorage, run, setInputField, selectTab } from './editing';
 import 'brace/theme/tomorrow_night_bright';
 
 require("./mode-michelson.js")
@@ -22,7 +22,7 @@ const RunUnconnected = ({ run, runResult, setInputField, parameter, storage }) =
       </Col>
       <Col sm={10}>
         <FormControl type="text" value={storage} 
-                                 placeholder='E.g., Unit, 15, (Pair "foo" "bar")'
+                                 placeholder='E.g., Unit, 15, "test", (Pair "foo" "bar")'
                                  onChange={(val) => setInputField("storage", val.target.value)} />
       </Col>
     </FormGroup>
@@ -32,7 +32,7 @@ const RunUnconnected = ({ run, runResult, setInputField, parameter, storage }) =
       </Col>
       <Col sm={10}>
         <FormControl type="text" value={parameter} 
-                                 placeholder='E.g., Unit, 15, (Pair "foo" "bar")'
+                                 placeholder='E.g., Unit, 15, "test", (Pair "foo" "bar")'
                                  onChange={(val) => setInputField("parameter", val.target.value)} />
       </Col>
     </FormGroup>
@@ -57,18 +57,18 @@ const Run = connect(
 
 const TabsUnconnected = ({ selectTab, selectedTab, source, shareURL, result }) => {
   return <Panel>
-        <Tab.Container id="result" defaultActiveKey={1}>
+        <Tab.Container id="result" defaultActiveKey={1} onSelect={selectTab}>
         <div><div className="panel-heading clearfix">
           <Nav bsStyle="tabs">
-          <NavItem eventKey={1}>Typecheck</NavItem>
-          <NavItem eventKey={2}>Run</NavItem>
+          <NavItem eventKey={1}>Run</NavItem>
+          <NavItem eventKey={2}>Typecheck</NavItem>
           <NavItem eventKey={3}>Share</NavItem>
           </Nav></div>
         <Tab.Content animation={false}>
-        <Tab.Pane eventKey={1} title="Typecheck">
+        <Tab.Pane eventKey={1} title="Run"><Run /></Tab.Pane>
+        <Tab.Pane eventKey={2} title="Typecheck">
           <div style={{paddingLeft: 30}}><pre>{result}</pre></div>
         </Tab.Pane>
-        <Tab.Pane eventKey={2} title="Run"><Run /></Tab.Pane>
         <Tab.Pane eventKey={3} title="Share"><Share shareURL={shareURL} /></Tab.Pane>
         </Tab.Content>
         </div>
@@ -86,7 +86,7 @@ const Results = connect(
   state => ({ source: getSource(state), 
               result: getTypecheckResult(state),
               shareURL: getShareURL(state)  }),
-  null
+  { selectTab }
 )(TabsUnconnected)
 
 const RenderPage = ({ source, edit, result, select }) => {

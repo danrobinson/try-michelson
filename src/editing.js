@@ -6,6 +6,7 @@ const TYPECHECK = 'try-michelson/editing/TYPECHECK'
 const SHARE = 'try-michelson/editing/SHARE'
 const RUN = 'try-michelson/editing/RUN'
 const SET_INPUT_FIELD = 'try-michelson/editing/SET_INPUT_FIELD'
+const SELECT_TAB = 'michelson/editing/SELECT_TAB'
 
 export const typecheck = () => {
   return (dispatch, getState) => {
@@ -42,7 +43,8 @@ const initialState = {
   result: "",
   typecheckResult: "",
   parameter: "",
-  storage: ""
+  storage: "",
+  selectedTab: 1
 }
 
 export default function reducer(state = initialState, action) {
@@ -76,6 +78,12 @@ export default function reducer(state = initialState, action) {
         ...state,
         [action.field]: action.val,
         runResult: ""
+      }
+    }
+    case SELECT_TAB: {
+      return {
+        ...state,
+        selectedTab: action.index
       }
     }
     case "@@router/LOCATION_CHANGE":
@@ -127,12 +135,15 @@ export const setInputField = (field, val) => {
 }
 
 export const edit = (source) => {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch({
       type: EDIT,
       source
     })
-    dispatch(typecheck())
+    let selectedTab = getSelectedTab(getState())
+    if (selectedTab === 2) {
+      dispatch(typecheck())
+    }
   }
 }
 
@@ -157,6 +168,18 @@ export const run = () => {
         result: result
       })
     })
+  }
+}
+
+export const selectTab = (index) => {
+  return (dispatch) => {
+    dispatch({
+      type: SELECT_TAB,
+      index
+    })
+    if (index === 2) {
+      dispatch(typecheck())
+    }
   }
 }
 
